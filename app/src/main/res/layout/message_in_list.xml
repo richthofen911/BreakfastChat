@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/cell_message_in_list"
+    android:orientation="horizontal"
+    android:background="@color/lightBlue">
+
+    <TextView
+        android:id="@+id/tv_self_padding"
+        android:layout_width="0dp"
+        android:layout_height="55dp"
+        android:layout_weight="1"/>
+
+    <RelativeLayout
+        android:layout_width="250dp"
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/iv_chat_profile_image"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginStart="5dp"
+            android:contentDescription="profileImage"
+            />
+
+        <TextView
+            android:id="@+id/tv_chat_user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_toEndOf="@id/iv_chat_profile_image"
+            android:textSize="10sp"
+            android:text="name"
+            />
+
+        <TextView
+            android:id="@+id/tv_chat_timestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="20dp"
+            android:layout_toEndOf="@id/tv_chat_user_name"
+            android:textSize="10sp"
+            android:text="10:30 PM"
+            />
+
+        <TextView
+            android:id="@+id/tv_chat_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_toEndOf="@id/iv_chat_profile_image"
+            android:layout_below="@id/tv_chat_user_name"
+            android:text="content"/>
+    </RelativeLayout>
+
+
+</LinearLayout>

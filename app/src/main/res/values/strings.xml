@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">BackendlessChatTest</string>
+
+    <string name="BACKENDLESS_APP_ID">CBCCFC6F-B6C9-A38D-FF43-FB8A5C7BD400</string>
+    <string name="BACKENDLESS_SECRET_KEY">7C17DBD9-74EB-E9F6-FF7E-C58EB5DD5100</string>
+    <string name="BACKENDLESS_APP_VERSION">v1</string>
+</resources>
