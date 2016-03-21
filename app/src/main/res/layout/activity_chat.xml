@@ -3,10 +3,29 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="io.ap1.backendlesschattest.ActivityChat">
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView_chat_msg_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:scrollbars="vertical" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/et_msg_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+        <Button
+            android:id="@+id/btn_send_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="send"/>
+    </LinearLayout>
+
 </LinearLayout>

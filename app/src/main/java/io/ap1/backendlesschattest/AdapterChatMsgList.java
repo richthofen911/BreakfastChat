@@ -2,6 +2,7 @@ package io.ap1.backendlesschattest;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,28 +28,23 @@ public class AdapterChatMsgList extends RecyclerView.Adapter<ViewHolderChatMessa
         chatHistory = messages;
         this.myObjectId = myObjectId;
         this.otherObjectId = otherObjectId;
-        myProfileImageUrl = Constants.PROFILE_IMAGE_PATH_ROOT + "/" + myObjectId + ".png";
-        otherProfielImageUrl = Constants.PROFILE_IMAGE_PATH_ROOT + "/" + otherObjectId + ".png";
+        myProfileImageUrl = Constants.PROFILE_IMAGE_PATH_ROOT + myObjectId + ".png";
+        otherProfielImageUrl = Constants.PROFILE_IMAGE_PATH_ROOT + otherObjectId + ".png";
      }
 
     @Override
     public ViewHolderChatMessage onCreateViewHolder(ViewGroup viewGroup, int viewType){
-        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.user_in_list, viewGroup, false);
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.message_in_list, viewGroup, false);
         return new ViewHolderChatMessage(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolderChatMessage newMessage, final int position){
         Message historyMsg = chatHistory.get(position);
-        /*
-        String userName = (String) userTmp.getProperty("name");
-        String userBio = (String) userTmp.getProperty("bio");
-        String userColor = "#" + userTmp.getProperty("color");
-        Log.e("adpater color", userColor);
-        String userPictureURL = (String) userTmp.getProperty("pictureUrl");
-        String pictureUrl = Constants.PROFILE_IMAGE_PATH_ROOT + userPictureURL;
-        Log.e("picasso", pictureUrl);
-        */
+
+        Log.e("myUrl", myProfileImageUrl);
+        Log.e("otherUrl", otherProfielImageUrl);
+
         if(historyMsg.getPublisherId().equals(otherObjectId)){
             newMessage.tvSelfPadding.setVisibility(View.GONE);
             Picasso.with(context).load(otherProfielImageUrl).into(newMessage.ivChatUserProfileImage);
@@ -56,7 +52,7 @@ public class AdapterChatMsgList extends RecyclerView.Adapter<ViewHolderChatMessa
             Picasso.with(context).load(myProfileImageUrl).into(newMessage.ivChatUserProfileImage);
 
         String userName = historyMsg.getPublisherId();
-        String timestamp = MainActivity.timeFormat.format(historyMsg.getTimestamp());
+        String timestamp = ActivityMain.timeFormat.format(historyMsg.getTimestamp());
         String content = (String) historyMsg.getData();
 
         newMessage.tvChatUserName.setText(userName);
@@ -69,5 +65,9 @@ public class AdapterChatMsgList extends RecyclerView.Adapter<ViewHolderChatMessa
     @Override
     public int getItemCount() {
         return chatHistory.size();
+    }
+
+    public ArrayList<Message> getChatHistory(){
+        return chatHistory;
     }
 }

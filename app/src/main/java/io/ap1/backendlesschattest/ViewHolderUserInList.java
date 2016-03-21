@@ -1,5 +1,7 @@
 package io.ap1.backendlesschattest;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
@@ -41,7 +43,11 @@ public class ViewHolderUserInList extends RecyclerView.ViewHolder{
         cellUserInList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                tvDetectedUserMsgNotify.setText("");
+                tvDetectedUserMsgNotify.setVisibility(View.GONE);
+                Context context = v.getContext();
+                Intent oneOnOneChat = new Intent(context, ActivityChat.class).putExtra("selectedIndex", selfPosition);
+                context.startActivity(oneOnOneChat);
             }
         });
     }

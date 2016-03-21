@@ -46,8 +46,12 @@ public class AdapterUserInList extends RecyclerView.Adapter<ViewHolderUserInList
         detectedUser.tvDetectedUserColor.setBackgroundColor(Color.parseColor(userColor));
         if(userTmp.getMessageList().size() == 0)
             detectedUser.tvDetectedUserMsgNotify.setVisibility(View.GONE);
-        else
-            detectedUser.tvDetectedUserMsgNotify.setText(userTmp.getMessageList().size());
+        else{
+            int newSize = userTmp.getMessageList().size();
+            detectedUser.tvDetectedUserMsgNotify.setVisibility(View.VISIBLE);
+            detectedUser.tvDetectedUserMsgNotify.setText(Integer.toString(newSize));
+        }
+
         Picasso.with(context).load(userPictureUrl).into(detectedUser.ivDetectedUserProfileImage);
         detectedUser.tvDetectedUserName.setText(userName);
         detectedUser.tvDetectedUserBio.setText(userBio);

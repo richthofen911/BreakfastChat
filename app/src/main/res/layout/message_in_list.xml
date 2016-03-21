@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:id="@+id/cell_message_in_list"
     android:orientation="horizontal"
-    android:background="@color/lightBlue">
+    >
 
     <TextView
         android:id="@+id/tv_self_padding"
