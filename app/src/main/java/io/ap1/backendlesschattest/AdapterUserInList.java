@@ -40,7 +40,7 @@ public class AdapterUserInList extends RecyclerView.Adapter<ViewHolderUserInList
         String userName = userTmp.getName();
         String userBio = userTmp.getBio();
         String userColor = userTmp.getColor();
-        String userPictureUrl = Constants.PROFILE_IMAGE_PATH_ROOT + userTmp.getPictureUrl();
+        String userPictureUrl = Constants.PROFILE_IMAGE_PATH_ROOT + userTmp.getProfileImage();
         detectedUser.tvDetectedUserColor.setBackgroundColor(Color.parseColor(userColor));
         if(userTmp.getUnreadMessageList().size() == 0)
             detectedUser.tvDetectedUserMsgNotify.setVisibility(View.GONE);

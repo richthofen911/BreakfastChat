@@ -52,13 +52,14 @@ public class ActivityChat extends AppCompatActivity {
         btnSend = (Button) findViewById(R.id.btn_send_msg);
 
         linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
 
         int selectedUserIndex = getIntent().getIntExtra("selectedIndex", 0);
         otherBackendlessUser = DataStore.userList.get(selectedUserIndex);
         targetUserObjectId = otherBackendlessUser.getUserObjectId();
-        otherBackendlessUser.getPictureUrl();
+        otherBackendlessUser.getProfileImage();
         //myUserObjectId = ActivityMain.myUserObjectId;
 
         currentChatHistoryDataSource = otherBackendlessUser.getUnreadMessageList();
@@ -71,12 +72,14 @@ public class ActivityChat extends AppCompatActivity {
                 binderMessageIO = (ServiceMessageIOCenter.BinderMessageIO) service;
 
                 myUserObject = binderMessageIO.getMyUserObject();
+                binderMessageIO.setRecyclerView(recyclerView);
 
                 myUserObjectId = myUserObject.getObjectId();
                 myChannel = binderMessageIO.getMyChannel();
 
-                adapterChatMsgList = new AdapterChatMsgList(ActivityChat.this, currentChatHistoryDataSource, myUserObjectId, targetUserObjectId, (String) myUserObject.getProperty("pictureUrl"), otherBackendlessUser.getPictureUrl());
+                adapterChatMsgList = new AdapterChatMsgList(ActivityChat.this, currentChatHistoryDataSource, myUserObjectId, targetUserObjectId, (String) myUserObject.getProperty("profileImage"), otherBackendlessUser.getProfileImage());
                 recyclerView.setAdapter(adapterChatMsgList);
+
                 binderMessageIO.setMyAdapterChatMsgList(adapterChatMsgList);
                 binderMessageIO.setTargetPubChannel(otherBackendlessUser.getUserObjectId());
                 // this method cannot be called before setTargetChannel, or it will get null or wrong result

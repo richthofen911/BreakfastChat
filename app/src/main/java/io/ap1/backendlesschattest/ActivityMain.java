@@ -80,6 +80,7 @@ public class ActivityMain extends AppCompatActivity {
         adapterUserInList = new AdapterUserInList(this);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView_user_list);
         linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapterUserInList);

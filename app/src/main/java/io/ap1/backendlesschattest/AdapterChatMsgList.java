@@ -2,6 +2,7 @@ package io.ap1.backendlesschattest;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,6 +24,7 @@ public class AdapterChatMsgList extends RecyclerView.Adapter<ViewHolderChatMessa
     private String otherObjectId;// the person you are talking to
     private String myProfileImageUrl;
     private String otherProfileImageUrl;
+    private LinearLayoutManager linearLayoutManager;
 
     public AdapterChatMsgList(Context context, ArrayList<Message> messages, String myObjectId, String otherObjectId, String myProfileImageName, String otherProfileImageName){
         this.context = context;
@@ -45,7 +47,6 @@ public class AdapterChatMsgList extends RecyclerView.Adapter<ViewHolderChatMessa
 
         Log.e("myUrl", myProfileImageUrl);
         Log.e("otherUrl", otherProfileImageUrl);
-
 
         // the other one's message aligns left, mine align right and has background color
         if(historyMsg.getPublisherId().equals(otherObjectId)){

@@ -29,8 +29,8 @@ public class MyBackendlessUser{
         return "#" + backendlessUser.getProperty("color");
     }
 
-    public String getPictureUrl(){
-        return (String) backendlessUser.getProperty("pictureUrl");
+    public String getProfileImage(){
+        return (String) backendlessUser.getProperty("profileImage");
     }
 
     public String getUserObjectId(){

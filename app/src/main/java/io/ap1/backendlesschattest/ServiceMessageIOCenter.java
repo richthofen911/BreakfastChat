@@ -6,6 +6,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,6 +24,8 @@ import java.util.List;
 
 public class ServiceMessageIOCenter extends Service {
 
+    private RecyclerView recyclerViewToScroll;
+
     private String myUserObjectId;
     private String targetUserObjectId;
     private String targetChannel;
@@ -33,6 +36,8 @@ public class ServiceMessageIOCenter extends Service {
     private AdapterChatMsgList adapterChatMsgList;
 
     private Handler handler;
+
+    private static final String TAG = "ServiceMsgIOCenter";
 
     public ServiceMessageIOCenter() {
     }
@@ -92,11 +97,15 @@ public class ServiceMessageIOCenter extends Service {
         Log.e("adapterChatMsgList", "assigned");
     }
 
+    private void setRecyclerViewToScroll(RecyclerView recyclerView){
+        this.recyclerViewToScroll = recyclerView;
+    }
+
     private void retrieveUserObject(final String detectedUserObjectId){
         Backendless.Persistence.of( BackendlessUser.class ).findById(detectedUserObjectId, new DefaultCallback<BackendlessUser>(this) {
             @Override
             public void handleResponse(BackendlessUser response) {
-                Log.e("detect user info", response.getProperty("name") + "\n" + response.getProperty("pictureUrl"));
+                Log.e("detect user info", response.getProperty("name") + "\n" + response.getProperty("profileImage"));
                 if (!DataStore.userList.contains(response)) {
                     //DataStore.userList.add(DataStore.userList.size(), response);
                     DataStore.userList.add(new MyBackendlessUser(response));
@@ -138,7 +147,8 @@ public class ServiceMessageIOCenter extends Service {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(ServiceMessageIOCenter.this, "Msg sent: " + messageStatus.getMessageId(), Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(ServiceMessageIOCenter.this, "Msg sent: " + messageStatus.getMessageId(), Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "msg sent");
                         }
                     });
                 }
@@ -173,6 +183,11 @@ public class ServiceMessageIOCenter extends Service {
                                     if(adapterChatMsgList != null){
                                         adapterChatMsgList.getChatHistory().add(message);
                                         adapterChatMsgList.notifyItemInserted(adapterChatMsgList.getItemCount());
+                                        if(recyclerViewToScroll != null){
+                                            recyclerViewToScroll.scrollToPosition(adapterChatMsgList.getItemCount() - 1);
+                                            Log.e("scroll", "once");
+                                        }
+
                                     }
                                 }
 
@@ -184,6 +199,11 @@ public class ServiceMessageIOCenter extends Service {
                                         }else{
                                             adapterChatMsgList.getChatHistory().add(message);
                                             adapterChatMsgList.notifyItemInserted(adapterChatMsgList.getItemCount());
+                                            if(recyclerViewToScroll != null){
+                                                recyclerViewToScroll.scrollToPosition(adapterChatMsgList.getItemCount() - 1);
+                                                Log.e("scroll", "once");
+                                            }
+
                                         }
                                         break;
                                     }
@@ -248,6 +268,10 @@ public class ServiceMessageIOCenter extends Service {
 
         public void setMyAdapterChatMsgList(AdapterChatMsgList adapterChatMsgList){
             setAdapterChatMsgList(adapterChatMsgList);
+        }
+
+        public void setRecyclerView(RecyclerView recyclerView){
+            setRecyclerViewToScroll(recyclerView);
         }
 
         public void subToMyChannel(){
