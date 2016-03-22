@@ -30,6 +30,8 @@ import java.util.Locale;
 
 public class ActivityMain extends AppCompatActivity {
 
+    private static final String TAG = "ActivityMain";
+
     BluetoothAdapter bluetoothAdapter;
     //channel name with be the same as new bluetooth adapter name
     String btNameOrigin = "unknown";
@@ -52,15 +54,13 @@ public class ActivityMain extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Log.e(TAG, "onCreate");
 
         Backendless.initApp(this, getString(R.string.BACKENDLESS_APP_ID),
                 getString(R.string.BACKENDLESS_SECRET_KEY), getString(R.string.BACKENDLESS_APP_VERSION));
         Backendless.setUrl("http://159.203.15.85/api"); //Digital Ocean host
 
         //Backendless.Messaging.
-
-
         if(Build.DEVICE.equals("hammerhead"))
             myUserObjectId = "F4CEADE3-459F-8E00-FF6D-CF7D1B6D7C00";
         else if(Build.DEVICE.equals("victara"))
@@ -76,7 +76,6 @@ public class ActivityMain extends AppCompatActivity {
         tvStatus = (TextView) findViewById(R.id.tv_status);
 
 
-
         adapterUserInList = new AdapterUserInList(this);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView_user_list);
         linearLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -84,6 +83,7 @@ public class ActivityMain extends AppCompatActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapterUserInList);
+
 
         messageIOCenterConn = new ServiceConnection() {
             @Override
@@ -111,8 +111,10 @@ public class ActivityMain extends AppCompatActivity {
                     // Get the BluetoothDevice object from the Intent
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     String detectedDeviceName = device.getName();
-                    //if(detectedDeviceName != null)
-                    //    Log.e("device detected", detectedDeviceName);
+                    /*
+                    if(detectedDeviceName != null)
+                        Log.e("device detected", detectedDeviceName);
+                        */
                     if(detectedDeviceName != null && detectedDeviceName.startsWith("proximity/")) {
                         Log.e("proximity user found", device.getName() + "\n" + device.getAddress());
                         binderMessageIO.getUserObjectByObjectId(getTargetUserObjectId(detectedDeviceName));
@@ -121,6 +123,7 @@ public class ActivityMain extends AppCompatActivity {
                     // When discovery is finished, change the Activity title
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                     tvStatus.setText("scan finished");
+                    discoverDevices();
                     Log.e("device discovery", "finished");
                 }
             }
@@ -129,6 +132,24 @@ public class ActivityMain extends AppCompatActivity {
         changeBTNameForThisApp(myUserObjectId);
 
 
+        discoverDevices();
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        Log.e(TAG, "onStart");
+        /*
+        adapterUserInList = new AdapterUserInList(this);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView_user_list);
+        linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(adapterUserInList);
+        */
+    }
+
+    private void discoverDevices(){
         if(!checkPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)){
             requestPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         }else {
@@ -136,9 +157,7 @@ public class ActivityMain extends AppCompatActivity {
                 bluetoothAdapter.startDiscovery();
                 tvStatus.setText("scanning");
             }
-
         }
-
     }
 
     private void registerMyReceiver(Context context) {
@@ -172,11 +191,13 @@ public class ActivityMain extends AppCompatActivity {
 
     private void ensureDiscoverable() {
         if (bluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+
             Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
             startActivity(discoverableIntent);
         }
     }
+
 
     protected void bindServiceMsgIOCenter(){
         Log.e("trying to bind", "Service MessageIOCenter");
@@ -205,15 +226,42 @@ public class ActivityMain extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onPause(){
+        super.onPause();
+        Log.e(TAG, "onPause");
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        Log.e(TAG, "onResume");
+    }
+
+    @Override
+    public void onRestart(){
+        super.onRestart();
+        Log.e(TAG, "onRestart");
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.e(TAG, "onStop");
+    }
+
     public void onDestroy(){
         super.onDestroy();
+        Log.e(TAG, "onDestroy");
 
         if(bluetoothAdapter != null){
             bluetoothAdapter.setName(btNameOrigin);
             bluetoothAdapter.cancelDiscovery();
+            //bluetoothAdapter.disable();
         }
 
         DataStore.userList.clear();
+        DataStore.duplicateCheck.clear();
         adapterUserInList.notifyItemRangeRemoved(0, DataStore.userList.size() - 1);
 
         this.unregisterReceiver(mReceiver);

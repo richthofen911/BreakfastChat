@@ -106,8 +106,9 @@ public class ServiceMessageIOCenter extends Service {
             @Override
             public void handleResponse(BackendlessUser response) {
                 Log.e("detect user info", response.getProperty("name") + "\n" + response.getProperty("profileImage"));
-                if (!DataStore.userList.contains(response)) {
-                    //DataStore.userList.add(DataStore.userList.size(), response);
+                // if not duplicate user, add to list
+                if(DataStore.duplicateCheck.get(response.getObjectId()) == null){
+                    DataStore.duplicateCheck.put(response.getObjectId(), "hold");
                     DataStore.userList.add(new MyBackendlessUser(response));
                     adapterUserInList.notifyItemInserted(DataStore.userList.size());
                 }
@@ -168,15 +169,13 @@ public class ServiceMessageIOCenter extends Service {
     }
 
     private void subscribeToMyChannel(){
-        //Log.e("my channel", myChannel + "");
-
         Backendless.Messaging.subscribe(myChannel,
                 new AsyncCallback<List<Message>>() {
                     @Override
                     public void handleResponse(List<Message> messages) {
                         if(messages != null){
                             for (Message message : messages) {
-                                //Log.e("msg recv", message.getData() + "");
+                                Log.e(TAG, "onReceive: " + message.getData());
                                 String publisherId = message.getPublisherId();
 
                                 if(publisherId.equals(myUserObjectId)){ // this is the msg I sent, just to show on my chat history
