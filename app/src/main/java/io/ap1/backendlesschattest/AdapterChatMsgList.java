@@ -1,6 +1,7 @@
 package io.ap1.backendlesschattest;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,15 +22,15 @@ public class AdapterChatMsgList extends RecyclerView.Adapter<ViewHolderChatMessa
     private String myObjectId;
     private String otherObjectId;// the person you are talking to
     private String myProfileImageUrl;
-    private String otherProfielImageUrl;
+    private String otherProfileImageUrl;
 
-    public AdapterChatMsgList(Context context, ArrayList<Message> messages, String myObjectId, String otherObjectId){
+    public AdapterChatMsgList(Context context, ArrayList<Message> messages, String myObjectId, String otherObjectId, String myProfileImageName, String otherProfileImageName){
         this.context = context;
         chatHistory = messages;
         this.myObjectId = myObjectId;
         this.otherObjectId = otherObjectId;
-        myProfileImageUrl = Constants.PROFILE_IMAGE_PATH_ROOT + myObjectId + ".png";
-        otherProfielImageUrl = Constants.PROFILE_IMAGE_PATH_ROOT + otherObjectId + ".png";
+        myProfileImageUrl = Constants.PROFILE_IMAGE_PATH_ROOT + myProfileImageName;
+        otherProfileImageUrl = Constants.PROFILE_IMAGE_PATH_ROOT + otherProfileImageName;
      }
 
     @Override
@@ -43,15 +44,20 @@ public class AdapterChatMsgList extends RecyclerView.Adapter<ViewHolderChatMessa
         Message historyMsg = chatHistory.get(position);
 
         Log.e("myUrl", myProfileImageUrl);
-        Log.e("otherUrl", otherProfielImageUrl);
+        Log.e("otherUrl", otherProfileImageUrl);
 
+
+        // the other one's message aligns left, mine align right and has background color
         if(historyMsg.getPublisherId().equals(otherObjectId)){
             newMessage.tvSelfPadding.setVisibility(View.GONE);
-            Picasso.with(context).load(otherProfielImageUrl).into(newMessage.ivChatUserProfileImage);
-        }else
+            Picasso.with(context).load(otherProfileImageUrl).into(newMessage.ivChatUserProfileImage);
+        }else{
             Picasso.with(context).load(myProfileImageUrl).into(newMessage.ivChatUserProfileImage);
+            newMessage.tvChatMsgContent.setBackground(context.getResources().getDrawable(R.drawable.textview_round_corner));
+        }
 
-        String userName = historyMsg.getPublisherId();
+
+        String userName = historyMsg.getHeaders().get("name");
         String timestamp = ActivityMain.timeFormat.format(historyMsg.getTimestamp());
         String content = (String) historyMsg.getData();
 

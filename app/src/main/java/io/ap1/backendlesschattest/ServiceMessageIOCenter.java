@@ -6,7 +6,6 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -28,6 +27,7 @@ public class ServiceMessageIOCenter extends Service {
     private String targetUserObjectId;
     private String targetChannel;
     private String myChannel;
+    private BackendlessUser myUserObject;
 
     private AdapterUserInList adapterUserInList;
     private AdapterChatMsgList adapterChatMsgList;
@@ -52,9 +52,35 @@ public class ServiceMessageIOCenter extends Service {
         if(bundle.getString("myUserObjectId") != null){
             myUserObjectId = bundle.getString("myUserObjectId");
             myChannel = "proximity_" + myUserObjectId.replace("-", "");
+
+            Backendless.Persistence.of( BackendlessUser.class ).findById(myUserObjectId, new DefaultCallback<BackendlessUser>(this) {
+                @Override
+                public void handleResponse(BackendlessUser response) {
+                    myUserObject = response;
+                }
+
+                @Override
+                public void handleFault(BackendlessFault fault) {
+                    super.handleFault(fault);
+                    Log.e("Handle fault", fault.toString());
+                }
+            });
         }
 
         return new BinderMessageIO();
+    }
+
+    private String getMyChannelName(){
+        return myChannel;
+    }
+
+    // this method cannot be called before setTargetChannel, or it will get null or wrong result
+    private String getTargetChannelName(){
+        return targetChannel;
+    }
+
+    private BackendlessUser getMyBackendlessUserObject(){
+        return myUserObject;
     }
 
     public void setAdapterUserInList(AdapterUserInList adapterUserInList){
@@ -63,9 +89,10 @@ public class ServiceMessageIOCenter extends Service {
 
     public void setAdapterChatMsgList(AdapterChatMsgList adapterChatMsgList){
         this.adapterChatMsgList = adapterChatMsgList;
+        Log.e("adapterChatMsgList", "assigned");
     }
 
-    private void retrieveDetectedUserObject(final String detectedUserObjectId){
+    private void retrieveUserObject(final String detectedUserObjectId){
         Backendless.Persistence.of( BackendlessUser.class ).findById(detectedUserObjectId, new DefaultCallback<BackendlessUser>(this) {
             @Override
             public void handleResponse(BackendlessUser response) {
@@ -90,12 +117,13 @@ public class ServiceMessageIOCenter extends Service {
         targetChannel = "proximity_" + targetUserObjectId.replace("-", "");
     }
 
-    private void publishToTargetChannel(String msgType, String msgContent){
+    private void publishToChannel(String channelName, String msgType, String msgContent){
         PublishOptions publishOptions = new PublishOptions();
         publishOptions.putHeader("type", msgType);
         publishOptions.setPublisherId(myUserObjectId);
-        Log.e("targetChannel", targetChannel + "");
-        Backendless.Messaging.publish(targetChannel, msgContent, publishOptions, new AsyncCallback<MessageStatus>() {
+        publishOptions.putHeader("name", (String) myUserObject.getProperty("name"));
+
+        Backendless.Messaging.publish(channelName, msgContent, publishOptions, new AsyncCallback<MessageStatus>() {
             @Override
             public void handleResponse(final MessageStatus messageStatus) {
                 PublishStatusEnum msgStatus = messageStatus.getStatus();
@@ -130,7 +158,7 @@ public class ServiceMessageIOCenter extends Service {
     }
 
     private void subscribeToMyChannel(){
-        Log.e("my channel", myChannel + "");
+        //Log.e("my channel", myChannel + "");
 
         Backendless.Messaging.subscribe(myChannel,
                 new AsyncCallback<List<Message>>() {
@@ -138,8 +166,15 @@ public class ServiceMessageIOCenter extends Service {
                     public void handleResponse(List<Message> messages) {
                         if(messages != null){
                             for (Message message : messages) {
-                                Log.e("msg recv", message.getData() + "");
+                                //Log.e("msg recv", message.getData() + "");
                                 String publisherId = message.getPublisherId();
+
+                                if(publisherId.equals(myUserObjectId)){ // this is the msg I sent, just to show on my chat history
+                                    if(adapterChatMsgList != null){
+                                        adapterChatMsgList.getChatHistory().add(message);
+                                        adapterChatMsgList.notifyItemInserted(adapterChatMsgList.getItemCount());
+                                    }
+                                }
 
                                 for (int i = 0; i < DataStore.userList.size(); i++) {
                                     if (publisherId.equals(DataStore.userList.get(i).getUserObjectId())) {
@@ -150,6 +185,7 @@ public class ServiceMessageIOCenter extends Service {
                                             adapterChatMsgList.getChatHistory().add(message);
                                             adapterChatMsgList.notifyItemInserted(adapterChatMsgList.getItemCount());
                                         }
+                                        break;
                                     }
                                 }
                             }
@@ -193,6 +229,19 @@ public class ServiceMessageIOCenter extends Service {
     }
 
     public class BinderMessageIO extends Binder{
+
+        public BackendlessUser getMyUserObject(){
+            return getMyBackendlessUserObject();
+        }
+
+        public String getMyChannel(){
+            return getMyChannelName();
+        }
+
+        public String getTargetChannel(){
+            return getTargetChannelName();
+        }
+
         public void setMyAdapterUserInList(AdapterUserInList adapterUserInList) {
             setAdapterUserInList(adapterUserInList);
         }
@@ -209,12 +258,12 @@ public class ServiceMessageIOCenter extends Service {
             setTargetChannel(targetUserObjectId);
         }
 
-        public void pubToTargetChannel(String msgType, String msgContent){
-            publishToTargetChannel(msgType, msgContent);
+        public void pubToChannel(String channelName, String msgType, String msgContent){
+            publishToChannel(channelName, msgType, msgContent);
         }
 
         public void getUserObjectByObjectId(String detectedUserObjectId){
-            retrieveDetectedUserObject(detectedUserObjectId);
+            retrieveUserObject(detectedUserObjectId);
         }
     }
 }

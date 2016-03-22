@@ -10,11 +10,11 @@ import java.util.ArrayList;
  */
 public class MyBackendlessUser{
     private BackendlessUser backendlessUser;
-    private ArrayList<Message> messageList;
+    private ArrayList<Message> unreadMessageList;
 
     public MyBackendlessUser(BackendlessUser backendlessUser){
         this.backendlessUser = backendlessUser;
-        messageList = new ArrayList<>();
+        unreadMessageList = new ArrayList<>();
     }
 
     public String getName(){
@@ -38,14 +38,14 @@ public class MyBackendlessUser{
     }
 
     public void addToMessageList(Message newMessage){
-        messageList.add(newMessage);
+        unreadMessageList.add(newMessage);
     }
 
     public void clearMessageList(){
-        messageList.clear();
+        unreadMessageList.clear();
     }
 
-    public ArrayList<Message> getMessageList(){
-        return messageList;
+    public ArrayList<Message> getUnreadMessageList(){
+        return unreadMessageList;
     }
 }

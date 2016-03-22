@@ -24,16 +24,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.backendless.Backendless;
-import com.backendless.BackendlessUser;
-import com.backendless.async.callback.AsyncCallback;
-import com.backendless.exceptions.BackendlessFault;
-import com.backendless.messaging.Message;
-import com.backendless.messaging.MessageStatus;
-import com.backendless.messaging.PublishOptions;
-import com.backendless.messaging.PublishStatusEnum;
 
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.Locale;
 
 public class ActivityMain extends AppCompatActivity {
@@ -49,7 +41,7 @@ public class ActivityMain extends AppCompatActivity {
     TextView tvMe;
     TextView tvStatus;
     LinearLayoutManager linearLayoutManager;
-    private String myChannel;
+    private String myProximityDeviceName;
     public static SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm a", Locale.CANADA);
 
     public ServiceMessageIOCenter.BinderMessageIO binderMessageIO;
@@ -118,8 +110,8 @@ public class ActivityMain extends AppCompatActivity {
                     // Get the BluetoothDevice object from the Intent
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     String detectedDeviceName = device.getName();
-                    if(detectedDeviceName != null)
-                        Log.e("device detected", detectedDeviceName);
+                    //if(detectedDeviceName != null)
+                    //    Log.e("device detected", detectedDeviceName);
                     if(detectedDeviceName != null && detectedDeviceName.startsWith("proximity/")) {
                         Log.e("proximity user found", device.getName() + "\n" + device.getAddress());
                         binderMessageIO.getUserObjectByObjectId(getTargetUserObjectId(detectedDeviceName));
@@ -155,13 +147,13 @@ public class ActivityMain extends AppCompatActivity {
 
     private void changeBTNameForThisApp(String myUserObjectId){
         btNameOrigin = bluetoothAdapter.getName();
-        myChannel = "proximity/chat/" + myUserObjectId;
-        bluetoothAdapter.setName(myChannel);
+        myProximityDeviceName = "proximity/" + myUserObjectId;
+        bluetoothAdapter.setName(myProximityDeviceName);
     }
 
     private String getTargetUserObjectId(String targetChannel){
         String[] components = targetChannel.split("/");
-        return components[2];
+        return components[1];
     }
 
     public boolean checkPermission(Context context, String permissionName){

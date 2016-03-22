@@ -3,12 +3,10 @@ package io.ap1.backendlesschattest;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.backendless.BackendlessUser;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -44,10 +42,10 @@ public class AdapterUserInList extends RecyclerView.Adapter<ViewHolderUserInList
         String userColor = userTmp.getColor();
         String userPictureUrl = Constants.PROFILE_IMAGE_PATH_ROOT + userTmp.getPictureUrl();
         detectedUser.tvDetectedUserColor.setBackgroundColor(Color.parseColor(userColor));
-        if(userTmp.getMessageList().size() == 0)
+        if(userTmp.getUnreadMessageList().size() == 0)
             detectedUser.tvDetectedUserMsgNotify.setVisibility(View.GONE);
         else{
-            int newSize = userTmp.getMessageList().size();
+            int newSize = userTmp.getUnreadMessageList().size();
             detectedUser.tvDetectedUserMsgNotify.setVisibility(View.VISIBLE);
             detectedUser.tvDetectedUserMsgNotify.setText(Integer.toString(newSize));
         }
