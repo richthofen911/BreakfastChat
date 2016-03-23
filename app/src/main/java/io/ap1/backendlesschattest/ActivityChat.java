@@ -109,6 +109,7 @@ public class ActivityChat extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
 
+        binderMessageIO.setTargetPubChannel(null); // clear targetPublishChannel
         otherBackendlessUser.clearMessageList();
         adapterChatMsgList.notifyItemRangeRemoved(0, 0);
 

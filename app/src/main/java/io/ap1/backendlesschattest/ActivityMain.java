@@ -123,7 +123,7 @@ public class ActivityMain extends AppCompatActivity {
                     // When discovery is finished, change the Activity title
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                     tvStatus.setText("scan finished");
-                    discoverDevices();
+                    //discoverDevices();
                     Log.e("device discovery", "finished");
                 }
             }

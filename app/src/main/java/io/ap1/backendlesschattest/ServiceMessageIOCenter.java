@@ -124,7 +124,8 @@ public class ServiceMessageIOCenter extends Service {
 
     private void setTargetChannel(String targetUserObjectId){
         this.targetUserObjectId = targetUserObjectId;
-        targetChannel = "proximity_" + targetUserObjectId.replace("-", "");
+        if(targetUserObjectId != null)
+            targetChannel = "proximity_" + targetUserObjectId.replace("-", "");
     }
 
     private void publishToChannel(String channelName, String msgType, String msgContent){
@@ -177,34 +178,34 @@ public class ServiceMessageIOCenter extends Service {
                             for (Message message : messages) {
                                 Log.e(TAG, "onReceive: " + message.getData());
                                 String publisherId = message.getPublisherId();
-
-                                if(publisherId.equals(myUserObjectId)){ // this is the msg I sent, just to show on my chat history
+                                Log.e(TAG, "Received id: " + publisherId);
+                                if(publisherId.equals(myUserObjectId)){ // this is the msg I sent, show it on my chat history
                                     if(adapterChatMsgList != null){
                                         adapterChatMsgList.getChatHistory().add(message);
                                         adapterChatMsgList.notifyItemInserted(adapterChatMsgList.getItemCount());
                                         if(recyclerViewToScroll != null){
                                             recyclerViewToScroll.scrollToPosition(adapterChatMsgList.getItemCount() - 1);
-                                            Log.e("scroll", "once");
+                                            //Log.e("scroll", "once");
                                         }
-
                                     }
-                                }
-
-                                for (int i = 0; i < DataStore.userList.size(); i++) {
-                                    if (publisherId.equals(DataStore.userList.get(i).getUserObjectId())) {
-                                        if(!message.getPublisherId().equals(targetUserObjectId)){
-                                            DataStore.userList.get(i).addToMessageList(message);
-                                            adapterUserInList.notifyItemChanged(i);
-                                        }else{
-                                            adapterChatMsgList.getChatHistory().add(message);
-                                            adapterChatMsgList.notifyItemInserted(adapterChatMsgList.getItemCount());
-                                            if(recyclerViewToScroll != null){
-                                                recyclerViewToScroll.scrollToPosition(adapterChatMsgList.getItemCount() - 1);
-                                                Log.e("scroll", "once");
+                                }else{
+                                    Log.e(TAG, "user in list:");
+                                    for (int i = 0; i < DataStore.userList.size(); i++) {
+                                        Log.e(TAG, DataStore.userList.get(i).getUserObjectId());
+                                        if (publisherId.equals(DataStore.userList.get(i).getUserObjectId())) { // if publishId is in userList
+                                            if(!message.getPublisherId().equals(targetUserObjectId)){ // if it's not the user you're currently chatting with
+                                                DataStore.userList.get(i).addToMessageList(message);  // update the userList
+                                                adapterUserInList.notifyItemChanged(i);
+                                            }else{
+                                                adapterChatMsgList.getChatHistory().add(message); // if it is the user you're currently chatting with
+                                                adapterChatMsgList.notifyItemInserted(adapterChatMsgList.getItemCount()); // update the chat history list
+                                                if(recyclerViewToScroll != null){                                       // scroll to the bottom to show new msg
+                                                    recyclerViewToScroll.scrollToPosition(adapterChatMsgList.getItemCount() - 1);
+                                                    //Log.e("scroll", "once");
+                                                }
                                             }
-
+                                            break;
                                         }
-                                        break;
                                     }
                                 }
                             }
