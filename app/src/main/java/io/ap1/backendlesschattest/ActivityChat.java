@@ -14,11 +14,17 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.backendless.BackendlessUser;
-import com.backendless.messaging.Message;
 
+import net.callofdroidy.apas.Message;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
 
 public class ActivityChat extends AppCompatActivity {
+    private final static String TAG = "ActivityChat";
 
     private String myUserObjectId;
     private String targetUserObjectId;
@@ -28,7 +34,7 @@ public class ActivityChat extends AppCompatActivity {
     private LinearLayoutManager linearLayoutManager;
     private RecyclerView recyclerView;
 
-    private ServiceMessageIOCenter.BinderMessageIO binderMessageIO;
+    ServiceMessageCenter.BinderMsgCenter binderMsgCenter;
 
     private ServiceConnection messageIOCenterChatConn;
 
@@ -41,6 +47,10 @@ public class ActivityChat extends AppCompatActivity {
     private String otherChannel;
 
     private BackendlessUser myUserObject;
+
+    private final static String channelNamePrefix = "proximity_";
+
+    private AppPubsubCallback appPubsubCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,27 +79,40 @@ public class ActivityChat extends AppCompatActivity {
         messageIOCenterChatConn = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                binderMessageIO = (ServiceMessageIOCenter.BinderMessageIO) service;
+                binderMsgCenter = (ServiceMessageCenter.BinderMsgCenter) service;
 
-                myUserObject = binderMessageIO.getMyUserObject();
-                binderMessageIO.setRecyclerView(recyclerView);
-
+                myUserObject = binderMsgCenter.getMyUserObject();
                 myUserObjectId = myUserObject.getObjectId();
-                myChannel = binderMessageIO.getMyChannel();
+                myChannel = binderMsgCenter.getSubChannel();
+                otherChannel = channelNamePrefix + otherBackendlessUser.getUserObjectId();
+                binderMsgCenter.setPubChannel(otherChannel);
+
+                Log.e(TAG, "pub channel: " + binderMsgCenter.getPubChannel() + "\n" + "sub channel: " + binderMsgCenter.getSubChannel());
 
                 adapterChatMsgList = new AdapterChatMsgList(ActivityChat.this, currentChatHistoryDataSource, myUserObjectId, targetUserObjectId, (String) myUserObject.getProperty("profileImage"), otherBackendlessUser.getProfileImage());
                 recyclerView.setAdapter(adapterChatMsgList);
 
-                binderMessageIO.setMyAdapterChatMsgList(adapterChatMsgList);
-                binderMessageIO.setTargetPubChannel(otherBackendlessUser.getUserObjectId());
-                // this method cannot be called before setTargetChannel, or it will get null or wrong result
-                otherChannel = binderMessageIO.getTargetChannel();
+                appPubsubCallback = AppPubsubCallback.getAppPubsubCallback();
+                appPubsubCallback.setActivity(ActivityChat.this);
+                appPubsubCallback.setChatMsgListAdapter(adapterChatMsgList);
+                appPubsubCallback.setCurrentTalkingUser(targetUserObjectId);
+                appPubsubCallback.setRecyeclerViewToScroll(recyclerView);
+                appPubsubCallback.setTAG(TAG);
+
+                binderMsgCenter.setPubsubCallback(AppPubsubCallback.getAppPubsubCallback());
 
                 btnSend.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        binderMessageIO.pubToChannel(otherChannel, Constants.CHAT_MESSAGE_TYPE_NORMAL, etMsgInput.getText().toString());
-                        binderMessageIO.pubToChannel(myChannel, Constants.CHAT_MESSAGE_TYPE_NORMAL, etMsgInput.getText().toString());
+                        HashMap<String, String> headers = new HashMap<>();
+                        headers.put("source", myUserObjectId);
+                        headers.put("name", (String) myUserObject.getProperty("name"));
+                        headers.put("timestamp", String.valueOf(new Date().getTime()));
+                        String body = etMsgInput.getText().toString();
+                        Message msg = new Message(headers, body);
+
+                        binderMsgCenter.pubToChannel(msg);
+                        binderMsgCenter.pubToAnotherChannel(myChannel, msg);
 
                         etMsgInput.setText("");
                     }
@@ -103,19 +126,19 @@ public class ActivityChat extends AppCompatActivity {
             }
         };
 
-        bindService(new Intent(ActivityChat.this, ServiceMessageIOCenter.class), messageIOCenterChatConn, BIND_AUTO_CREATE);
+        bindService(new Intent(ActivityChat.this, ServiceMessageCenter.class), messageIOCenterChatConn, BIND_AUTO_CREATE);
     }
 
     public void onDestroy() {
         super.onDestroy();
 
-        binderMessageIO.setTargetPubChannel(null); // clear targetPublishChannel
+        binderMsgCenter.setPubChannel(null); // clear targetPublishChannel
+        appPubsubCallback.setCurrentTalkingUser("0");
         otherBackendlessUser.clearMessageList();
         adapterChatMsgList.notifyItemRangeRemoved(0, 0);
 
-        if(binderMessageIO != null && binderMessageIO.isBinderAlive())
+        if(binderMsgCenter != null && binderMsgCenter.isBinderAlive())
             this.unbindService(messageIOCenterChatConn);
-
     }
 
 }

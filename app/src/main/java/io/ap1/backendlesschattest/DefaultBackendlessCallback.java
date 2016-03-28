@@ -8,17 +8,17 @@ import android.widget.Toast;
 import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.exceptions.BackendlessFault;
 
-public class DefaultCallback<T> extends BackendlessCallback<T> {
+public class DefaultBackendlessCallback<T> extends BackendlessCallback<T> {
     private Context context;
     private ProgressDialog progressDialog;
 
-    public DefaultCallback(Context context) {
+    public DefaultBackendlessCallback(Context context) {
         this.context = context;
         //progressDialog = ProgressDialog.show( context, "", "Loading...", true );
         //progressDialog.setCancelable(true);
     }
 
-    public DefaultCallback(Context context, String message) {
+    public DefaultBackendlessCallback(Context context, String message) {
         this.context = context;
         //progressDialog = ProgressDialog.show( context, "", message, true );
     }

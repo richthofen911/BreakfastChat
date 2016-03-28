@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.backendless.Backendless;
+import com.pubnub.api.Pubnub;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -31,6 +32,8 @@ import java.util.Locale;
 public class ActivityMain extends AppCompatActivity {
 
     private static final String TAG = "ActivityMain";
+
+    public AppPubsubCallback appPubsubCallback;
 
     BluetoothAdapter bluetoothAdapter;
     //channel name with be the same as new bluetooth adapter name
@@ -46,7 +49,9 @@ public class ActivityMain extends AppCompatActivity {
     private String myProximityDeviceName;
     public static SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm a", Locale.CANADA);
 
-    public ServiceMessageIOCenter.BinderMessageIO binderMessageIO;
+    public ServiceMessageCenter.BinderMsgCenter binderMsgCenter;
+
+    public MyPubsubProviderClient myPubsubProviderClient;
 
     private ServiceConnection messageIOCenterConn;
 
@@ -59,6 +64,8 @@ public class ActivityMain extends AppCompatActivity {
         Backendless.initApp(this, getString(R.string.BACKENDLESS_APP_ID),
                 getString(R.string.BACKENDLESS_SECRET_KEY), getString(R.string.BACKENDLESS_APP_VERSION));
         Backendless.setUrl("http://159.203.15.85/api"); //Digital Ocean host
+
+        myPubsubProviderClient = new MyPubsubProviderClient(new Pubnub("pub-c-af13868a-beb9-4719-82fc-8518ddfacea8", "sub-c-48ef81b4-f118-11e5-8f88-0619f8945a4f"));
 
         //Backendless.Messaging.
         if(Build.DEVICE.equals("hammerhead"))
@@ -84,23 +91,7 @@ public class ActivityMain extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapterUserInList);
 
-
-        messageIOCenterConn = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                binderMessageIO = (ServiceMessageIOCenter.BinderMessageIO) service;
-                binderMessageIO.setMyAdapterUserInList(adapterUserInList);
-                binderMessageIO.subToMyChannel();
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                Log.e("Service MessageCenter", "Disconnected");
-            }
-        };
-
-        bindServiceMsgIOCenter();
-
+        appPubsubCallback = new AppPubsubCallback(this, myUserObjectId, adapterUserInList, TAG);
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -111,13 +102,9 @@ public class ActivityMain extends AppCompatActivity {
                     // Get the BluetoothDevice object from the Intent
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     String detectedDeviceName = device.getName();
-                    /*
-                    if(detectedDeviceName != null)
-                        Log.e("device detected", detectedDeviceName);
-                        */
                     if(detectedDeviceName != null && detectedDeviceName.startsWith("proximity/")) {
                         Log.e("proximity user found", device.getName() + "\n" + device.getAddress());
-                        binderMessageIO.getUserObjectByObjectId(getTargetUserObjectId(detectedDeviceName));
+                        binderMsgCenter.getUserObjectByObjectId(getTargetUserObjectId(detectedDeviceName));
                     }
 
                     // When discovery is finished, change the Activity title
@@ -128,9 +115,32 @@ public class ActivityMain extends AppCompatActivity {
                 }
             }
         };
-        registerMyReceiver(this);
-        changeBTNameForThisApp(myUserObjectId);
 
+        messageIOCenterConn = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                Log.e("Service MessageCenter", "Connected");
+                binderMsgCenter = (ServiceMessageCenter.BinderMsgCenter) service;
+
+                binderMsgCenter.setMyAdapterUserInList(adapterUserInList);
+                registerMyReceiver(ActivityMain.this);
+
+                binderMsgCenter.setSubChannel("proximity_" + myUserObjectId);
+                binderMsgCenter.setPubsubProviderClient(myPubsubProviderClient);
+                binderMsgCenter.setPubsubCallback(appPubsubCallback);
+
+                binderMsgCenter.subToChannel();
+
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                Log.e("Service MessageCenter", "Disconnected");
+            }
+        };
+
+        bindServiceMsgIOCenter();
+        changeBTNameForThisApp(myUserObjectId);
 
         discoverDevices();
     }
@@ -201,9 +211,9 @@ public class ActivityMain extends AppCompatActivity {
 
     protected void bindServiceMsgIOCenter(){
         Log.e("trying to bind", "Service MessageIOCenter");
-        Bundle beaconInfo = new Bundle();
-        beaconInfo.putString("myUserObjectId", myUserObjectId);
-        bindService(new Intent(ActivityMain.this, ServiceMessageIOCenter.class).putExtras(beaconInfo), messageIOCenterConn, BIND_AUTO_CREATE);
+        Bundle bundle = new Bundle();
+        bundle.putString("myUserObjectId", myUserObjectId);
+        bindService(new Intent(ActivityMain.this, ServiceMessageCenter.class).putExtras(bundle), messageIOCenterConn, BIND_AUTO_CREATE);
     }
 
     @Override
@@ -266,7 +276,7 @@ public class ActivityMain extends AppCompatActivity {
 
         this.unregisterReceiver(mReceiver);
 
-        if(binderMessageIO != null && binderMessageIO.isBinderAlive())
+        if(binderMsgCenter != null && binderMsgCenter.isBinderAlive())
             this.unbindService(messageIOCenterConn);
 
     }

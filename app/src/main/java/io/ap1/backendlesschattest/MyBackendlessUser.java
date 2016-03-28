@@ -1,7 +1,8 @@
 package io.ap1.backendlesschattest;
 
 import com.backendless.BackendlessUser;
-import com.backendless.messaging.Message;
+
+import net.callofdroidy.apas.Message;
 
 import java.util.ArrayList;
 

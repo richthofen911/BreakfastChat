@@ -23,7 +23,7 @@
         <activity android:name=".ActivityChat" />
 
         <service
-            android:name=".ServiceMessageIOCenter"
+            android:name=".ServiceMessageCenter"
             android:enabled="true"
             android:exported="true"></service>
     </application>

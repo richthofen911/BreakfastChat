@@ -9,8 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.backendless.messaging.Message;
 import com.squareup.picasso.Picasso;
+
+import net.callofdroidy.apas.Message;
 
 import java.util.ArrayList;
 
@@ -49,7 +50,7 @@ public class AdapterChatMsgList extends RecyclerView.Adapter<ViewHolderChatMessa
         Log.e("otherUrl", otherProfileImageUrl);
 
         // the other one's message aligns left, mine align right and has background color
-        if(historyMsg.getPublisherId().equals(otherObjectId)){
+        if(historyMsg.getHeaders().get("source").equals(otherObjectId)){
             newMessage.tvSelfPadding.setVisibility(View.GONE);
             Picasso.with(context).load(otherProfileImageUrl).into(newMessage.ivChatUserProfileImage);
         }else{
@@ -57,10 +58,9 @@ public class AdapterChatMsgList extends RecyclerView.Adapter<ViewHolderChatMessa
             newMessage.tvChatMsgContent.setBackground(context.getResources().getDrawable(R.drawable.textview_round_corner));
         }
 
-
         String userName = historyMsg.getHeaders().get("name");
-        String timestamp = ActivityMain.timeFormat.format(historyMsg.getTimestamp());
-        String content = (String) historyMsg.getData();
+        String timestamp = historyMsg.getHeaders().get("timestamp");
+        String content = historyMsg.getBody();
 
         newMessage.tvChatUserName.setText(userName);
         newMessage.tvChatMsgTimestamp.setText(timestamp);

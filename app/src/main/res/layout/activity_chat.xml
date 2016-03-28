@@ -8,8 +8,8 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView_chat_msg_list"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="450dp"
+
         android:scrollbars="vertical"
         android:fadeScrollbars="true"
         />
